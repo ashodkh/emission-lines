@@ -24,7 +24,7 @@ import astropy.units as u
 from desiutil.dust import ext_fitzpatrick
 from scipy.ndimage import gaussian_filter1d
 import argparse
-test
+
 # which line to be used is set as an argument of the script. Line is important because there is a signal-to-noise cut on each line separately.
 parser=argparse.ArgumentParser()
 parser.add_argument('l', type=int)
