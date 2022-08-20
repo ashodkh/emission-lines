@@ -22,7 +22,7 @@ parser.add_argument('l', type=int)
 args=parser.parse_args()
 
 lines=["OII_DOUBLET_EW","HGAMMA_EW","HBETA_EW","OIII_4959_EW","OIII_5007_EW","NII_6548_EW","HALPHA_EW","NII_6584_EW","SII_6716_EW","SII_6731_EW", "test"]
-n = 25*10**3
+n = 30*10**3
 run = 0
 l = args.l
 
@@ -42,8 +42,8 @@ decades = 3
 
 for i in range(decades):
     n = 10*10**3
-    if i == 2:
-        n = 5*10**3
+    # if i == 2:
+    #     n = 5*10**3
     spectra = np.zeros([n,nw])
     tic = time.time()
     for j in range(n):

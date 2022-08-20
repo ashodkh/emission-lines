@@ -23,22 +23,25 @@ args=parser.parse_args()
 # parameters
 n = 30*10**3    # number of initial data points
 nw = 7781       # length of wavelength vector
-run = 0         # run is to keep track of which selection
+run = 1         # run is to keep track of which selection
 masking = True  # if true then emission lines will be masked+interpolated
 l = args.l
 
 lines = ["OII_DOUBLET_EW", "HGAMMA_EW", "HBETA_EW", "OIII_4959_EW", "OIII_5007_EW", "NII_6548_EW", "HALPHA_EW", "NII_6584_EW", "SII_6716_EW", "SII_6731_EW", "test"]
 lines_waves = [3728.5, 4342, 4862.7, 4960.3, 5008.2, 6549.9, 6564.6, 6585.3, 6718.3, 6732.7]  # vacuum wavelengths of the emission lines
 
-server = 0 # 0 is perlmutter, 1 is cori
+server = 1 # 0 is perlmutter, 1 is cori
 server_paths = ['/pscratch/sd/a/ashodkh/', '/global/cscratch1/sd/ashodkh/']
 
 zs_all = np.load(server_paths[server] + "target_selection/zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
 
 ## I am limiting spectra to 10k at a time for memory issues. decades = number of 10k spectra. so decades = 3 is 30,000, stored in separate 10k files
 decades = 3
-n = 10*10**3
+
 for k in range(decades):
+    n = 10*10**3
+    # if k == 2:
+    #     n = 5*10**3
     print(k)
     spectra = np.load(server_paths[server] + "spectra_from_targets/raw/raw_spectra" +str(k)+ "_selection"+str(run)+"_"+str(lines[l])+".txt.npz")["arr_0"]
 

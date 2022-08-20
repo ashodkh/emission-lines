@@ -32,10 +32,10 @@ args=parser.parse_args()
 cosmo=FlatLambdaCDM(H0=70, Om0=0.3)
 
 lines=["OII_DOUBLET_EW", "HGAMMA_EW", "HBETA_EW", "OIII_4959_EW", "OIII_5007_EW", "NII_6548_EW", "HALPHA_EW", "NII_6584_EW", "SII_6716_EW", "SII_6731_EW", "test"]
-n = 25*10**3
-run = 0
+n = 30*10**3
+run = 1
 l = args.l
-fastspec = True
+fastspec = False
 fastphot = not(fastspec)
 
 server = 1 # 0 is perlmutter, 1 is cori
@@ -74,8 +74,8 @@ massnorm = 1e10 # stellar mass normalization factor for the SSPs [Msun]
 decades = 3
 for j in range(decades):
     n = 10*10**3
-    if j == 2:
-        n = 5*10**3
+    # if j == 2:
+    #     n = 5*10**3
     spectra = np.zeros([n, len(wavelength)])
     tic = time.time()
     for i in range(n):
@@ -94,7 +94,7 @@ for j in range(decades):
     print(time.time() - tic)
 
 
-if fastspec:
-    np.savez_compressed(server_paths[server] + "spectra_from_targets/fastspec/fastspec_spectra" +str(j)+ "_selection"+str(run)+"_"+str(lines[l])+".txt", spectra)
-elif fastphot:
-    np.savez_compressed(server_paths[server] + "spectra_from_targets/fastphot/fastphot_spectra" +str(j)+ "_selection"+str(run)+"_"+str(lines[l])+".txt", spectra)
+    if fastspec:
+        np.savez_compressed(server_paths[server] + "spectra_from_targets/fastspec/fastspec_spectra" +str(j)+ "_selection"+str(run)+"_"+str(lines[l])+".txt", spectra)
+    elif fastphot:
+        np.savez_compressed(server_paths[server] + "spectra_from_targets/fastphot/fastphot_spectra" +str(j)+ "_selection"+str(run)+"_"+str(lines[l])+".txt", spectra)
