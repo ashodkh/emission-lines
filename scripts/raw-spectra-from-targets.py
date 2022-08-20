@@ -22,11 +22,11 @@ parser.add_argument('l', type=int)
 args=parser.parse_args()
 
 lines=["OII_DOUBLET_EW","HGAMMA_EW","HBETA_EW","OIII_4959_EW","OIII_5007_EW","NII_6548_EW","HALPHA_EW","NII_6584_EW","SII_6716_EW","SII_6731_EW", "test"]
-n = 30*10**3
+n = 25*10**3
 run = 0
 l = args.l
 
-server = 0 # 0 is perlmutter, 1 is cori
+server = 1 # 0 is perlmutter, 1 is cori
 server_paths = ['/pscratch/sd/a/ashodkh/', '/global/cscratch1/sd/ashodkh/']
 
 target_ids = np.load(server_paths[server] + "target_selection/target_ids_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
@@ -39,8 +39,11 @@ zs = np.load(server_paths[server] + "target_selection/zs_selection" + str(run) +
 ## I am limiting spectra to 10k at a time for memory issues. decades = number of 10k spectra. so decades = 3 is 30,000, stored in separate 10k files
 nw = 7781
 decades = 3
-n = 10*10**3
+
 for i in range(decades):
+    n = 10*10**3
+    if i == 2:
+        n = 5*10**3
     spectra = np.zeros([n,nw])
     tic = time.time()
     for j in range(n):

@@ -32,13 +32,13 @@ args=parser.parse_args()
 cosmo=FlatLambdaCDM(H0=70, Om0=0.3)
 
 lines=["OII_DOUBLET_EW", "HGAMMA_EW", "HBETA_EW", "OIII_4959_EW", "OIII_5007_EW", "NII_6548_EW", "HALPHA_EW", "NII_6584_EW", "SII_6716_EW", "SII_6731_EW", "test"]
-n = 30*10**3
+n = 25*10**3
 run = 0
 l = args.l
 fastspec = True
 fastphot = not(fastspec)
 
-server = 0 # 0 is perlmutter, 1 is cori
+server = 1 # 0 is perlmutter, 1 is cori
 server_paths = ['/pscratch/sd/a/ashodkh/', '/global/cscratch1/sd/ashodkh/']
 
 zs = np.load(server_paths[server] + "target_selection/zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
@@ -72,8 +72,10 @@ massnorm = 1e10 # stellar mass normalization factor for the SSPs [Msun]
 
 ## I am limiting spectra to 10k at a time for memory issues. decades = number of 10k spectra. so decades = 3 is 30,000, stored in separate 10k files
 decades = 3
-n = 10*10**3
 for j in range(decades):
+    n = 10*10**3
+    if j == 2:
+        n = 5*10**3
     spectra = np.zeros([n, len(wavelength)])
     tic = time.time()
     for i in range(n):
