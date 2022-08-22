@@ -23,10 +23,10 @@ args=parser.parse_args()
 # parameters
 n = 30*10**3    # number of initial data points
 nw = 7781       # length of wavelength vector
-run = 1         # run is to keep track of which selection
+run = 0         # run is to keep track of which selection
 
 l = args.l
-fastspec = True
+fastspec = False
 fastphot = not(fastspec)
 
 lines = ["OII_DOUBLET_EW", "HGAMMA_EW", "HBETA_EW", "OIII_4959_EW", "OIII_5007_EW", "NII_6548_EW", "HALPHA_EW", "NII_6584_EW", "SII_6716_EW", "SII_6731_EW", "test"]
@@ -37,10 +37,11 @@ server_paths = ['/pscratch/sd/a/ashodkh/', '/global/cscratch1/sd/ashodkh/']
 zs_all = np.load(server_paths[server] + "target_selection/zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
 
 ## I am limiting spectra to 10k at a time for memory issues. decades = number of 10k spectra. so decades = 3 is 30,000, stored in separate 10k files
-decades = 3
+decades = 1
 
 for k in range(decades):
-    n = 10*10**3
+    k = 2
+    n = 5*10**3
     # if k == 2:
     #     n = 5*10**3
     print(k)
@@ -53,7 +54,8 @@ for k in range(decades):
 
     #wavelengths=np.load("/global/cscratch1/sd/ashodkh/results/raw_data_wavelengths.txt.npz")["arr_0"]
     wavelengths = np.arange(3600, 9824+.8, .8) 
-    zs = zs_all[k*n:(k+1)*n]
+    #zs = zs_all[k*n:(k+1)*n]
+    zs = zs_all[20*10**3:25*10**3]
     
     nw = len(wavelengths)
     d = np.average(.8/(1+zs))

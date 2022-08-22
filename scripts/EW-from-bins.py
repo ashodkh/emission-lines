@@ -1,5 +1,3 @@
-perlmutter = True
-cori = False
 import numpy as np
 import pylab as plt
 from scipy import stats, signal
@@ -28,53 +26,65 @@ lines = ["OII_DOUBLET_EW","HGAMMA_EW","HBETA_EW","OIII_4959_EW","OIII_5007_EW","
 l = args.l
 
 run = 0
-m = 0
+m = 3 
 loga = True
 
-raw = True
-raw_unmasked = False
+raw = False
+raw_unmasked = True
 fastspec = False
 fastphot = False
 
 
 Ns = [6, 11, 16, 21, 26, 31, 41, 51]
-decades = 3 ## number of 10k galaxy files I want to load and combine
+decades = 2 ## number of 10k galaxy files I want to load and combine
 server = 1 # 0 is perlmutter, 1 is cori
 server_paths = ['/pscratch/sd/a/ashodkh/', '/global/cscratch1/sd/ashodkh/']
 for N in Ns:
     n = 10*10**3
-    fluxes_bin = np.zeros([decades*n, N-1]) ## fluxes are separated into groups of 10k galaxies
-    print(fluxes_bin.shape)
+    fluxes_bin = np.zeros([25*10**3, N-1]) ## fluxes are separated into groups of 10k galaxies
+    #print(fluxes_bin.shape)
 
     if raw:
         for i in range(decades):
             if i == 2:
                 n = 5*10**3
-            fluxes_bin[10**4*i:n*(i+1),:] = np.load(server_paths[server] + "fluxes_from_spectra/raw_masked/fluxes"\
+                fluxes_bin[10**4*i:25*10**3,:] = np.load(server_paths[server] + "fluxes_from_spectra/raw_masked/fluxes"\
+                                                +str(i)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt.npz")["arr_0"]
+            else:
+                fluxes_bin[10**4*i:n*(i+1),:] = np.load(server_paths[server] + "fluxes_from_spectra/raw_masked/fluxes"\
                                                 +str(i)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt.npz")["arr_0"]
     if raw_unmasked:
         for i in range(decades):
             if i == 2:
                 n = 5*10**3
-            fluxes_bin[10**4*i:n*(i+1),:] = np.load(server_paths[server] + "fluxes_from_spectra/raw_unmasked/unmasked_fluxes"\
+                fluxes_bin[10**4*i:25*10**3,:] = np.load(server_paths[server] + "fluxes_from_spectra/raw_unmasked/fluxes"\
+                                                +str(i)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt.npz")["arr_0"]
+            else:
+                fluxes_bin[10**4*i:n*(i+1),:] = np.load(server_paths[server] + "fluxes_from_spectra/raw_unmasked/unmasked_fluxes"\
                                                 +str(i)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt.npz")["arr_0"]
     if fastspec:
         for i in range(decades):
             if i == 2:
                 n = 5*10**3
-            fluxes_bin[10**4*i:n*(i+1),:] = np.load(server_paths[server] + "fluxes_from_spectra/fastspec/fluxes_fastspec"\
+                fluxes_bin[10**4*i:25*10**3,:] = np.load(server_paths[server] + "fluxes_from_spectra/fastspec/fluxes_fastspec"\
+                                                +str(i)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt.npz")["arr_0"]
+            else:
+                fluxes_bin[10**4*i:n*(i+1),:] = np.load(server_paths[server] + "fluxes_from_spectra/fastspec/fluxes_fastspec"\
                                                 +str(i)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt.npz")["arr_0"]
     if fastphot:
         for i in range(decades):
             if i == 2:
                 n = 5*10**3
-            fluxes_bin[10**4*i:n*(i+1),:] = np.load(server_paths[server] + "fluxes_from_spectra/fastphot/fluxes_fastphot"\
+                fluxes_bin[10**4*i:25*10**3,:] = np.load(server_paths[server] + "fluxes_from_spectra/fastphot/fluxes_fastphot"\
+                                                +str(i)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt.npz")["arr_0"]
+            else:
+                fluxes_bin[10**4*i:n*(i+1),:] = np.load(server_paths[server] + "fluxes_from_spectra/fastphot/fluxes_fastphot"\
                                                 +str(i)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt.npz")["arr_0"]
     zs = np.load(server_paths[server] + "target_selection/zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
     target_lines = np.load(server_paths[server] + "target_selection/line_ews_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
     line_ivars = np.load(server_paths[server] + "target_selection/line_ivars_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
 
-    n = 22*10**3 # number of data points I want to use for training
+    n = 19*10**3 # number of data points I want to use for training
 
     EWs = np.zeros([n,len(lines)])
     magnitudes = np.zeros([n,fluxes_bin.shape[1]])
@@ -99,7 +109,7 @@ for N in Ns:
     for j in range(magnitudes.shape[1]-1):
         x[:,j] = magnitudes[:,j]-magnitudes[:,j+1]
     x = scalar.fit_transform(x)
-    if m == 0:
+    if (m == 0 or m == 5) or m == 6:
         x = np.concatenate((ones,x),axis=1)
 
     if loga:
@@ -107,6 +117,7 @@ for N in Ns:
     else:
         EW = EWs[:,l]
     N_cv = 10
+    print(x.shape)
     x_split = np.split(x,N_cv)
     EW_split = np.split(EW,N_cv)
 
@@ -164,7 +175,12 @@ for N in Ns:
             batch_size = 100
             history = model.fit(x_train, EW_train, batch_size=batch_size, epochs=n_epochs, verbose=0, validation_data=(x_valid, EW_valid))
             EW_fit = model.predict(x_valid)
+            
+        if m == 5:
+            EW_fit,zeros = LLR.LLR(x_valid, x_train, EW_train, 200, 'inverse_distance')
 
+        if m == 6:
+            EW_fit,zeros = LLR.LLR(x_valid, x_train, EW_train, 600, 'inverse_distance')
         # calculating spearman coefficient and nmad for fit. nmad2 has the error in it.
         nmad = np.abs(EW_fit-EW_valid)
         nmad2 = np.abs(EW_fit-EW_valid)
@@ -186,33 +202,32 @@ for N in Ns:
     print('nmad_average= '+str(np.average(nmad_all)))
     print("\n")
 
-    if perlmutter:
-        if loga:
-            if raw:
-                np.savez_compressed(server_paths[server] + "ew_results/raw/m" +str(m)+ "/logEW_fit_raw_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
-                                    +"_ML"+str(m)+".txt", EW_fit_all)
-                np.savez_compressed(server_paths[server] + "ew_results/raw/m" +str(m)+ "/logEW_obs_raw_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
-                                    +"_ML"+str(m)+".txt", EW_obs_all)
-                np.savez_compressed(server_paths[server] + "ew_results/raw/m" +str(m)+ "/line_ivars_raw_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
-                                    +"_ML"+str(m)+".txt", line_ivars)
-            if raw_unmasked:
-                np.savez_compressed(server_paths[server] + "ew_results/raw_unmasked/m" +str(m)+ "/logEW_fit_raw_unmasked_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
-                                    +"_ML"+str(m)+".txt", EW_fit_all)
-                np.savez_compressed(server_paths[server] + "ew_results/raw_unmasked/m" +str(m)+ "/logEW_obs_raw_unmasked_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
-                                    +"_ML"+str(m)+".txt", EW_obs_all)
-                np.savez_compressed(server_paths[server] + "ew_results/raw_unmasked/m" +str(m)+ "/line_ivars_raw_unmasked_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
-                                    +"_ML"+str(m)+".txt", line_ivars)
-            if fastspec:
-                np.savez_compressed(server_paths[server] + "ew_results/fastspec/m" +str(m)+ "/logEW_fit_fastspec_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
-                                    +"_ML"+str(m)+".txt", EW_fit_all)
-                np.savez_compressed(server_paths[server] + "ew_results/fastspec/m" +str(m)+ "/logEW_obs_fastspec_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
-                                    +"_ML"+str(m)+".txt", EW_obs_all)
-                np.savez_compressed(server_paths[server] + "ew_results/fastspec/m" +str(m)+ "/line_ivars_fastspec_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
-                                    +"_ML"+str(m)+".txt", line_ivars)
-            if fastphot:
-                np.savez_compressed(server_paths[server] + "ew_results/fastphot/m" +str(m)+ "/logEW_fit_fastphot_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
-                                    +"_ML"+str(m)+".txt", EW_fit_all)
-                np.savez_compressed(server_paths[server] + "ew_results/fastphot/m" +str(m)+ "/logEW_obs_fastphot_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
-                                    +"_ML"+str(m)+".txt", EW_obs_all)
-                np.savez_compressed(server_paths[server] + "ew_results/fastphot/m" +str(m)+ "/line_ivars_fastphot_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
+    if loga:
+        if raw:
+            np.savez_compressed(server_paths[server] + "ew_results/raw/m" +str(m)+ "/logEW_fit_raw_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
+                                +"_ML"+str(m)+".txt", EW_fit_all)
+            np.savez_compressed(server_paths[server] + "ew_results/raw/m" +str(m)+ "/logEW_obs_raw_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
+                                +"_ML"+str(m)+".txt", EW_obs_all)
+            np.savez_compressed(server_paths[server] + "ew_results/raw/m" +str(m)+ "/line_ivars_raw_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
+                                +"_ML"+str(m)+".txt", line_ivars)
+        if raw_unmasked:
+            np.savez_compressed(server_paths[server] + "ew_results/raw_unmasked/m" +str(m)+ "/logEW_fit_raw_unmasked_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
+                                +"_ML"+str(m)+".txt", EW_fit_all)
+            np.savez_compressed(server_paths[server] + "ew_results/raw_unmasked/m" +str(m)+ "/logEW_obs_raw_unmasked_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
+                                +"_ML"+str(m)+".txt", EW_obs_all)
+            np.savez_compressed(server_paths[server] + "ew_results/raw_unmasked/m" +str(m)+ "/line_ivars_raw_unmasked_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
+                                +"_ML"+str(m)+".txt", line_ivars)
+        if fastspec:
+            np.savez_compressed(server_paths[server] + "ew_results/fastspec/m" +str(m)+ "/logEW_fit_fastspec_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
+                                +"_ML"+str(m)+".txt", EW_fit_all)
+            np.savez_compressed(server_paths[server] + "ew_results/fastspec/m" +str(m)+ "/logEW_obs_fastspec_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
+                                +"_ML"+str(m)+".txt", EW_obs_all)
+            np.savez_compressed(server_paths[server] + "ew_results/fastspec/m" +str(m)+ "/line_ivars_fastspec_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
+                                +"_ML"+str(m)+".txt", line_ivars)
+        if fastphot:
+            np.savez_compressed(server_paths[server] + "ew_results/fastphot/m" +str(m)+ "/logEW_fit_fastphot_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
+                                +"_ML"+str(m)+".txt", EW_fit_all)
+            np.savez_compressed(server_paths[server] + "ew_results/fastphot/m" +str(m)+ "/logEW_obs_fastphot_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
+                                +"_ML"+str(m)+".txt", EW_obs_all)
+            np.savez_compressed(server_paths[server] + "ew_results/fastphot/m" +str(m)+ "/line_ivars_fastphot_selection"+str(run)+"_line"+str(lines[l])+"_bins"+str(N)\
                                     +"_ML"+str(m)+".txt", line_ivars)
