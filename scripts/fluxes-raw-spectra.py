@@ -1,5 +1,3 @@
-perlmutter = True
-cori = False
 from astropy.io import fits
 from astropy.table import Table
 import numpy as np
@@ -24,7 +22,7 @@ args=parser.parse_args()
 n = 30*10**3    # number of initial data points
 nw = 7781       # length of wavelength vector
 run = 0         # run is to keep track of which selection
-masking = False  # if true then emission lines will be masked+interpolated
+masking = False # if true then emission lines will be masked+interpolated
 l = args.l
 
 lines = ["OII_DOUBLET_EW", "HGAMMA_EW", "HBETA_EW", "OIII_4959_EW", "OIII_5007_EW", "NII_6548_EW", "HALPHA_EW", "NII_6584_EW", "SII_6716_EW", "SII_6731_EW", "test"]
@@ -36,20 +34,17 @@ server_paths = ['/pscratch/sd/a/ashodkh/', '/global/cscratch1/sd/ashodkh/']
 zs_all = np.load(server_paths[server] + "target_selection/zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
 
 ## I am limiting spectra to 10k at a time for memory issues. decades = number of 10k spectra. so decades = 3 is 30,000, stored in separate 10k files
-decades = 2
-
+decades = 3
+n_decades = [10*10**3, 10*10**3, 5*10**3]
 for k in range(decades):
-    #k = 2
-    n = 10*10**3
-    # if k == 2:
-    #     n = 5*10**3
+    n = n_decades[k]
     print(k)
     spectra = np.load(server_paths[server] + "spectra_from_targets/raw/raw_spectra" +str(k)+ "_selection"+str(run)+"_"+str(lines[l])+".txt.npz")["arr_0"]
 
     #wavelengths=np.load("/global/cscratch1/sd/ashodkh/results/raw_data_wavelengths.txt.npz")["arr_0"]
     wavelengths = np.arange(3600, 9824+.8, .8) 
     #zs = zs_all[k*n:(k+1)*n]
-    zs = zs_all[n*k:n*(k+1)]
+    zs = zs_all[n_decades[k-1]*k : n_decades[k-1]*k + n]
     
     # de-redshifting the wavelengths and finding the average lattice spacing of wavelength grid to use for interpolation
 #     nw = len(wavelengths)
@@ -76,8 +71,8 @@ for k in range(decades):
             small_bins.append(np.arange(bin_ws[i],bin_ws[i+1],d))
             
         # calculating fluxes in bins for all the spectra
-        c=3*10**18
-        fluxes_bin=np.zeros([n,N-1])
+        c = 3*10**18
+        fluxes_bin = np.zeros([n,N-1])
 
         for i in range(n):
             rest_waves = wavelengths/(1+zs[i])
@@ -106,6 +101,6 @@ for k in range(decades):
         
 
         if masking:
-            np.savez_compressed(server_paths[server] + "fluxes_from_spectra/raw_masked/fluxes" +str(k)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt", fluxes_bin)
+            np.savez_compressed(server_paths[server] + "fluxes_from_spectra/raw_masked/fluxes_raw_masked" +str(k)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt", fluxes_bin)
         else:
-            np.savez_compressed(server_paths[server] + "fluxes_from_spectra/raw_unmasked/unmasked_fluxes" +str(k)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt", fluxes_bin)
+            np.savez_compressed(server_paths[server] + "fluxes_from_spectra/raw_unmasked/fluxes_raw_unmasked" +str(k)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt", fluxes_bin)

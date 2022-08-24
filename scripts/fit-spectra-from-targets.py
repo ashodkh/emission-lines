@@ -33,7 +33,7 @@ cosmo=FlatLambdaCDM(H0=70, Om0=0.3)
 
 lines=["OII_DOUBLET_EW", "HGAMMA_EW", "HBETA_EW", "OIII_4959_EW", "OIII_5007_EW", "NII_6548_EW", "HALPHA_EW", "NII_6584_EW", "SII_6716_EW", "SII_6731_EW", "test"]
 n = 30*10**3
-run = 0
+run = 1
 l = args.l
 fastspec = False
 fastphot = not(fastspec)
@@ -71,16 +71,17 @@ fluxnorm = 1e17 # normalization factor for the spectra
 massnorm = 1e10 # stellar mass normalization factor for the SSPs [Msun]
 
 ## I am limiting spectra to 10k at a time for memory issues. decades = number of 10k spectra. so decades = 3 is 30,000, stored in separate 10k files
-decades = 1
+decades = 3
 for j in range(decades):
-    j = 2
-    n = 5*10**3
+    #j = 2
+    n = 10*10**3
     # if j == 2:
     #     n = 5*10**3
     spectra = np.zeros([n, len(wavelength)])
     tic = time.time()
     for i in range(n):
-        k = i + 20*10**3
+        k = i + j*n # this index is 0-10k for i=0 and 10k-20k for i=1 etc...
+        #k = i + 20*10**3
         redshift = zs[k]
         rest_wavelength = wavelength/(1+redshift)
         tree = KDTree(template_waves2.reshape(-1,1))

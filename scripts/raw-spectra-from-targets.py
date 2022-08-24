@@ -1,5 +1,3 @@
-perlmutter = True
-cori = False
 from astropy.io import fits
 from astropy.table import Table, join
 import numpy as np
@@ -23,7 +21,7 @@ args=parser.parse_args()
 
 lines=["OII_DOUBLET_EW","HGAMMA_EW","HBETA_EW","OIII_4959_EW","OIII_5007_EW","NII_6548_EW","HALPHA_EW","NII_6584_EW","SII_6716_EW","SII_6731_EW", "test"]
 n = 30*10**3
-run = 0
+run = 1
 l = args.l
 
 server = 1 # 0 is perlmutter, 1 is cori
@@ -39,16 +37,16 @@ zs = np.load(server_paths[server] + "target_selection/zs_selection" + str(run) +
 ## I am limiting spectra to 10k at a time for memory issues. decades = number of 10k spectra. so decades = 3 is 30,000, stored in separate 10k files
 nw = 7781
 decades = 1
-
 for i in range(decades):
     i = 2
-    n = 5*10**3
+    n = 10*10**3
     # if i == 2:
     #     n = 5*10**3
     spectra = np.zeros([n,nw])
     tic = time.time()
     for j in range(n):
-        k = j + 20*10**3 # this index is 0-10k for i=0 and 10k-20k for i=1 etc...
+        k = j + i*n # this index is 0-10k for i=0 and 10k-20k for i=1 etc...
+        #k = j + 20*10**3 
         coadd_path = "/global/cfs/cdirs/desi/spectro/redux/fuji/tiles/cumulative/"+str(tile_ids[k])
         a = listdir(coadd_path)[0]
         coadd_path = "/global/cfs/cdirs/desi/spectro/redux/fuji/tiles/cumulative/"+str(tile_ids[k])+"/"+a
@@ -99,7 +97,7 @@ for i in range(decades):
         spectra[j,:] = spectrum[:]
     print(time.time()-tic)
 
-    wavelength = np.arange(3600, 9824+.8, .8)
+    #wavelength = np.arange(3600, 9824+.8, .8)
     
     np.savez_compressed(server_paths[server] + "spectra_from_targets/raw/raw_spectra" +str(i)+ "_selection"+str(run)+"_"+str(lines[l])+".txt", spectra)
     #np.savez_compressed("/pscratch/sd/a/ashodkh/spectra_from_targets/raw/raw_data_wavelengths.txt", wavelength)
