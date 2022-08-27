@@ -22,7 +22,7 @@ parser.add_argument('l', type=int)
 args=parser.parse_args()
 
 ## function that transforms fluxes into colors and also selects only data that have positive fluxes in all bins.
-def features_and_outcomes(x_in, y_in, n_out, ivar):
+def features_and_outcomes(x_in, y_in, n_out, ivar, loga):
     magnitudes = np.zeros([n_out,x_in.shape[1]])
     EWs = np.zeros([n_out,len(lines)])
     
@@ -65,7 +65,7 @@ l_test = 'test' # sv3 testing set is labeled as l=10 which corresponds to "test"
 run = 0
 run_test = 1
 m = 3 
-loga = False
+#loga = False
 
 data = 0 # 0 is raw_masked, 1 is raw_unmasked, 2 is fastspec, 3 is fastphot
 data_file_names = ['raw_masked', 'raw_unmasked', 'fastspec', 'fastphot']
@@ -99,9 +99,9 @@ for N in Ns:
     line_ivars_test = np.load(server_paths[server] + "target_selection/line_ivars_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"][0:20*10**3]
 
 
-    x, EW, line_ivars = features_and_outcomes(fluxes_bin, target_lines, 23*10**3, line_ivars)
+    x, EW, line_ivars = features_and_outcomes(fluxes_bin, target_lines, 23*10**3, line_ivars, loga = True)
     
-    x_test, EW_test, line_ivars_test = features_and_outcomes(fluxes_bin_test, target_lines_test, 19*10**3, line_ivars_test)
+    x_test, EW_test, line_ivars_test = features_and_outcomes(fluxes_bin_test, target_lines_test, 19*10**3, line_ivars_test, loga = False)
 
     
     # predicting EWs using different models
@@ -140,13 +140,11 @@ for N in Ns:
         EW_fit = model.predict(x_valid)
 
     if m == 5:
-        EW_fit,zeros = LLR.LLR(x_valid, x_train, EW_train, 200, 'inverse_distance')
+        EW_fit,zeros = LLR.LLR_slow(x_test, x, EW, 800, 'inverse_distance')
 
-    if m == 6:
-        EW_fit,zeros = LLR.LLR(x_valid, x_train, EW_train, 600, 'inverse_distance')
     # calculating spearman coefficient and nmad for fit. nmad2 has the error in it.
-    nmad = 1.48*np.median(np.abs(EW_fit-EW_test))
-    spearman = stats.spearmanr(EW_fit,EW_test)[0]
+    nmad = 1.48*np.median(np.abs(10**EW_fit-EW_test))
+    spearman = stats.spearmanr(10**EW_fit,EW_test)[0]
 
     print('spearman = ' + str(spearman))
     # print(rms_all)
@@ -154,18 +152,25 @@ for N in Ns:
     print('nmad= ' + str(nmad))
     print("\n")
 
-    if loga:
-        np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_logEW_fit_" + data_file_names[data] + "_selection" + str(run) + \
-                            "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", EW_fit)
-        np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_logEW_obs_" + data_file_names[data] + "_selection" + str(run) + \
-                            "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", EW_test)
-        np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_line_ivars_" + data_file_names[data] + "_selection" + str(run) + \
-                            "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", line_ivars_test)
-    else:
-        np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_EW_fit_" + data_file_names[data] + "_selection" + str(run) + \
-                            "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", EW_fit)
-        np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_EW_obs_" + data_file_names[data] + "_selection" + str(run) + \
-                            "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", EW_test)
-        np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_line_ivars_" + data_file_names[data] + "_selection" + str(run) + \
-                            "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", line_ivars_test)
+    np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_logEW_fit_" + data_file_names[data] + "_selection" + str(run) + \
+                                "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", EW_fit)
+    np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_EW_obs_" + data_file_names[data] + "_selection" + str(run) + \
+                                "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", EW_test)
+    np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_line_ivars_" + data_file_names[data] + "_selection" + str(run) + \
+                                "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", line_ivars_test)
+        
+    # if loga:
+    #     np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_logEW_fit_" + data_file_names[data] + "_selection" + str(run) + \
+    #                         "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", EW_fit)
+    #     np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_logEW_obs_" + data_file_names[data] + "_selection" + str(run) + \
+    #                         "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", EW_test)
+    #     np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_line_ivars_" + data_file_names[data] + "_selection" + str(run) + \
+    #                         "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", line_ivars_test)
+    # else:
+    #     np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_EW_fit_" + data_file_names[data] + "_selection" + str(run) + \
+    #                         "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", EW_fit)
+    #     np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_EW_obs_" + data_file_names[data] + "_selection" + str(run) + \
+    #                         "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", EW_test)
+    #     np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_line_ivars_" + data_file_names[data] + "_selection" + str(run) + \
+    #                         "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", line_ivars_test)
             
