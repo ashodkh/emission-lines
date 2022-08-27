@@ -20,8 +20,8 @@ parser.add_argument('l', type=int)
 args=parser.parse_args()
 
 lines=["OII_DOUBLET_EW","HGAMMA_EW","HBETA_EW","OIII_4959_EW","OIII_5007_EW","NII_6548_EW","HALPHA_EW","NII_6584_EW","SII_6716_EW","SII_6731_EW", "test"]
-n = 30*10**3
-run = 1
+
+run = 0
 l = args.l
 
 server = 1 # 0 is perlmutter, 1 is cori
@@ -36,16 +36,14 @@ zs = np.load(server_paths[server] + "target_selection/zs_selection" + str(run) +
 ## getting spectra for n points by inverse variance weighting fluxes.
 ## I am limiting spectra to 10k at a time for memory issues. decades = number of 10k spectra. so decades = 3 is 30,000, stored in separate 10k files
 nw = 7781
-decades = 1
+decades = 3
+n_decades = [10*10**3, 10*10**3, 5*10**3]
 for i in range(decades):
-    i = 2
-    n = 10*10**3
-    # if i == 2:
-    #     n = 5*10**3
+    n = n_decades[i]
     spectra = np.zeros([n,nw])
     tic = time.time()
     for j in range(n):
-        k = j + i*n # this index is 0-10k for i=0 and 10k-20k for i=1 etc...
+        k = j + i*n_decades[i-1] # this index is 0-10k for i=0 and 10k-20k for i=1 etc...
         #k = j + 20*10**3 
         coadd_path = "/global/cfs/cdirs/desi/spectro/redux/fuji/tiles/cumulative/"+str(tile_ids[k])
         a = listdir(coadd_path)[0]
