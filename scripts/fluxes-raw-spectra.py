@@ -19,10 +19,9 @@ parser.add_argument('l', type=int)
 args=parser.parse_args()
 
 # parameters
-n = 30*10**3    # number of initial data points
 nw = 7781       # length of wavelength vector
 run = 0         # run is to keep track of which selection
-masking = False # if true then emission lines will be masked+interpolated
+masking = True # if true then emission lines will be masked+interpolated
 l = args.l
 
 lines = ["OII_DOUBLET_EW", "HGAMMA_EW", "HBETA_EW", "OIII_4959_EW", "OIII_5007_EW", "NII_6548_EW", "HALPHA_EW", "NII_6584_EW", "SII_6716_EW", "SII_6731_EW", "test"]

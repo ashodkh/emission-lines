@@ -64,12 +64,12 @@ l = args.l
 l_test = 'test' # sv3 testing set is labeled as l=10 which corresponds to "test" in lines
 run = 0
 run_test = 1
-m = 3 
+m = 5 
 #loga = False
 
-data = 0 # 0 is raw_masked, 1 is raw_unmasked, 2 is fastspec, 3 is fastphot
+data = 3 # 0 is raw_masked, 1 is raw_unmasked, 2 is fastspec, 3 is fastphot
 data_file_names = ['raw_masked', 'raw_unmasked', 'fastspec', 'fastphot']
-data_flux_names = ['fluxes', 'fluxes', 'fluxes_fastspec', 'fluxes_fastphot']
+data_flux_names = ['fluxes_raw_masked', 'fluxes_raw_unmasked', 'fluxes_fastspec', 'fluxes_fastphot']
 
 Ns = [6, 11, 16, 21, 26, 31, 41, 51]
 decades = 3 ## number of 10k galaxy files I want to load and combine
@@ -77,12 +77,11 @@ n_decades = [10*10**3, 10*10**3, 5*10**3]
 server = 1 # 0 is perlmutter, 1 is cori
 server_paths = ['/pscratch/sd/a/ashodkh/', '/global/cscratch1/sd/ashodkh/']
 for N in Ns:
-    n = 10*10**3
     fluxes_bin = np.zeros([25*10**3, N-1]) ## fluxes are separated into groups of 10k galaxies
     fluxes_bin_test = np.zeros([20*10**3, N-1])
     for i in range(decades):
+        n = n_decades[i]
         if i == 2:
-            n = 5*10**3
             fluxes_bin[10**4*i:25*10**3,:] =  np.load(server_paths[server] + "fluxes_from_spectra/" + data_file_names[data] + "/" + data_flux_names[data]\
                                                 +str(i)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt.npz")["arr_0"]
         else:
@@ -94,14 +93,13 @@ for N in Ns:
     zs = np.load(server_paths[server] + "target_selection/zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
     target_lines = np.load(server_paths[server] + "target_selection/line_ews_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
     line_ivars = np.load(server_paths[server] + "target_selection/line_ivars_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
-    zs_test = np.load(server_paths[server] + "target_selection/zs_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"][0:20*10**3]
-    target_lines_test = np.load(server_paths[server] + "target_selection/line_ews_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"][0:20*10**3]
-    line_ivars_test = np.load(server_paths[server] + "target_selection/line_ivars_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"][0:20*10**3]
-
+    zs_test = np.load(server_paths[server] + "target_selection/zs_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"]
+    target_lines_test = np.load(server_paths[server] + "target_selection/line_ews_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"]
+    line_ivars_test = np.load(server_paths[server] + "target_selection/line_ivars_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"]
 
     x, EW, line_ivars = features_and_outcomes(fluxes_bin, target_lines, 23*10**3, line_ivars, loga = True)
     
-    x_test, EW_test, line_ivars_test = features_and_outcomes(fluxes_bin_test, target_lines_test, 19*10**3, line_ivars_test, loga = False)
+    x_test, EW_test, line_ivars_test = features_and_outcomes(fluxes_bin_test, target_lines_test, 18*10**3, line_ivars_test, loga = False)
 
     
     # predicting EWs using different models
@@ -146,6 +144,7 @@ for N in Ns:
     nmad = 1.48*np.median(np.abs(10**EW_fit-EW_test))
     spearman = stats.spearmanr(10**EW_fit,EW_test)[0]
 
+    print(lines[l])
     print('spearman = ' + str(spearman))
     # print(rms_all)
     # print(np.average(rms_all))
