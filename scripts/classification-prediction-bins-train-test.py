@@ -193,7 +193,7 @@ for N in Ns:
     m_j = [0, 3, 5] # this is the model used for prediction after classification
 
     for m in m_j:
-        EW_fit_p, zeros = predict(x_p, EW_p, x_test_p, m)
+        EW_fit_p, zeros = predict(np.concatenate((x_p, x_n)), np.concatenate((EW_p, EW_n)), x_test_p, m)
         EW_fit_n = np.zeros(len(EW_test_n))
 
 

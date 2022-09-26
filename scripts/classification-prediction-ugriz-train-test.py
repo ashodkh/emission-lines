@@ -116,7 +116,7 @@ def predict(x, y, x_test, m):
         zeros = []
 
     if m == 5:
-        y_fit, zeros = LLR.LLR(x_test, x, y, 500, 'inverse_distance')
+        y_fit, zeros = LLR.LLR_slow(x_test, x, y, 800, 'inverse_distance')
 
     if m ==6:
         kernel = DotProduct()
@@ -174,21 +174,24 @@ y_fit_01[y_fit>0.7] = 1
 x_p, x_n, EW_p, EW_n, ivar_p, ivar_n = features_and_outcomes_prediction(x, y, EW, ivar, loga=True)
 x_test_p, x_test_n, EW_test_p, EW_test_n, ivar_test_p, ivar_test_n = features_and_outcomes_prediction(x_test, y_fit_01, EW_test, ivar_test, loga=False)
 
-EW_fit_p, zeros = predict(x_p, EW_p, x_test_p, 0)
-EW_fit_n = np.zeros(len(EW_test_n))
+m_j = [0, 5] # this is the model used for prediction after classification
+
+for m in m_j:
+    EW_fit_p, zeros = predict(np.concatenate((x_p, x_n)), np.concatenate((EW_p, EW_n)), x_test_p, m)
+    EW_fit_n = np.zeros(len(EW_test_n))
 
 
-## for output data is combined by concatenating predictions with 0 class to predictions with 1 class.
-EW_fit_all = np.concatenate((EW_fit_n, 10**EW_fit_p))
-EW_test_all = np.concatenate((EW_test_n, EW_test_p))
-ivar_test_all = np.concatenate((ivar_test_n, ivar_test_p))
+    ## for output data is combined by concatenating predictions with 0 class to predictions with 1 class.
+    EW_fit_all = np.concatenate((EW_fit_n, 10**EW_fit_p))
+    EW_test_all = np.concatenate((EW_test_n, EW_test_p))
+    ivar_test_all = np.concatenate((ivar_test_n, ivar_test_p))
 
-spearman = stats.spearmanr(EW_fit_all, EW_test_all)[0]
-print(spearman)
+    spearman = stats.spearmanr(EW_fit_all, EW_test_all)[0]
+    print(spearman)
 
-np.savez_compressed(server_paths[server] + "ew_results/ugriz/m" +str(m)+ "/classification_test_logEW_fit_ugriz_selection"+str(run_train)+"_line"+str(lines[l])+"_bins"+str(N)\
-                        +"_ML"+str(m)+".txt", EW_fit_all)
-np.savez_compressed(server_paths[server] + "ew_results/ugriz/m" +str(m)+ "/classification_test_EW_obs_ugriz_selection"+str(run_train)+"_line"+str(lines[l])+"_bins"+str(N)\
-                        +"_ML"+str(m)+".txt", EW_test_all)
-np.savez_compressed(server_paths[server] + "ew_results/ugriz/m" +str(m)+ "/classification_test_line_ivars_ugriz_selection"+str(run_train)+"_line"+str(lines[l])+"_bins"+str(N)\
-                        +"_ML"+str(m)+".txt", ivar_test_all)
+    np.savez_compressed(server_paths[server] + "ew_results_classification/ugriz/m" +str(m)+ "/classification_test_logEW_fit_ugriz_selection"+str(run_train)+"_line"+str(lines[l])+"_bins"+str(N)\
+                            +"_ML"+str(m)+".txt", EW_fit_all)
+    np.savez_compressed(server_paths[server] + "ew_results_classification/ugriz/m" +str(m)+ "/classification_test_EW_obs_ugriz_selection"+str(run_train)+"_line"+str(lines[l])+"_bins"+str(N)\
+                            +"_ML"+str(m)+".txt", EW_test_all)
+    np.savez_compressed(server_paths[server] + "ew_results_classification/ugriz/m" +str(m)+ "/classification_test_line_ivars_ugriz_selection"+str(run_train)+"_line"+str(lines[l])+"_bins"+str(N)\
+                            +"_ML"+str(m)+".txt", ivar_test_all)

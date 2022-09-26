@@ -20,9 +20,10 @@ args=parser.parse_args()
 
 # parameters
 nw = 7781       # length of wavelength vector
-run = 0         # run is to keep track of which selection
+run = 2         # run is to keep track of which selection
 masking = True # if true then emission lines will be masked+interpolated
 l = args.l
+sv = '1'
 
 lines = ["OII_DOUBLET_EW", "HGAMMA_EW", "HBETA_EW", "OIII_4959_EW", "OIII_5007_EW", "NII_6548_EW", "HALPHA_EW", "NII_6584_EW", "SII_6716_EW", "SII_6731_EW", "test"]
 lines_waves = [3728.5, 4342, 4862.7, 4960.3, 5008.2, 6549.9, 6564.6, 6585.3, 6718.3, 6732.7]  # vacuum wavelengths of the emission lines
@@ -30,7 +31,7 @@ lines_waves = [3728.5, 4342, 4862.7, 4960.3, 5008.2, 6549.9, 6564.6, 6585.3, 671
 server = 1 # 0 is perlmutter, 1 is cori
 server_paths = ['/pscratch/sd/a/ashodkh/', '/global/cscratch1/sd/ashodkh/']
 
-zs_all = np.load(server_paths[server] + "target_selection/zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
+zs_all = np.load(server_paths[server] + "target_selection/sv" + sv + "_zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
 
 ## I am limiting spectra to 10k at a time for memory issues. decades = number of 10k spectra. so decades = 3 is 30,000, stored in separate 10k files
 decades = 3
@@ -38,7 +39,7 @@ n_decades = [10*10**3, 10*10**3, 5*10**3]
 for k in range(decades):
     n = n_decades[k]
     print(k)
-    spectra = np.load(server_paths[server] + "spectra_from_targets/raw/raw_spectra" +str(k)+ "_selection"+str(run)+"_"+str(lines[l])+".txt.npz")["arr_0"]
+    spectra = np.load(server_paths[server] + "spectra_from_targets/raw/sv" + sv + "_raw_spectra" +str(k)+ "_selection"+str(run)+"_"+str(lines[l])+".txt.npz")["arr_0"]
 
     #wavelengths=np.load("/global/cscratch1/sd/ashodkh/results/raw_data_wavelengths.txt.npz")["arr_0"]
     wavelengths = np.arange(3600, 9824+.8, .8) 
@@ -100,6 +101,6 @@ for k in range(decades):
         
 
         if masking:
-            np.savez_compressed(server_paths[server] + "fluxes_from_spectra/raw_masked/fluxes_raw_masked" +str(k)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt", fluxes_bin)
+            np.savez_compressed(server_paths[server] + "fluxes_from_spectra/raw_masked/sv" + sv + "_fluxes_raw_masked" +str(k)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt", fluxes_bin)
         else:
-            np.savez_compressed(server_paths[server] + "fluxes_from_spectra/raw_unmasked/fluxes_raw_unmasked" +str(k)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt", fluxes_bin)
+            np.savez_compressed(server_paths[server] + "fluxes_from_spectra/raw_unmasked/sv" + sv + "_fluxes_raw_unmasked" +str(k)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt", fluxes_bin)

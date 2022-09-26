@@ -34,10 +34,11 @@ def features_and_outcomes(x_in, y_in, n_out, ivar, loga):
     y_in = y_in[select_fluxes]
     ivar = ivar[select_fluxes]
     
-    for i in range(n_out):
-        magnitudes[i,:] = -2.5*np.log10(x_in[i,:])
-        for j in range(len(lines)):
-            EWs[i,j] = y_in[i][j]
+    for j in range(x_in.shape[1]):
+        magnitudes[:,j] = -2.5*np.log10(x_in[:,j])
+        
+    for j in range(len(lines)):
+        EWs[:,j] = y_in[j][:]
     
     ones = np.ones([n_out,1])
     scalar = StandardScaler()
@@ -61,13 +62,15 @@ def features_and_outcomes(x_in, y_in, n_out, ivar, loga):
 lines = ["OII_DOUBLET_EW", "HGAMMA_EW", "HBETA_EW", "OIII_4959_EW", "OIII_5007_EW", "NII_6548_EW",\
          "HALPHA_EW", "NII_6584_EW", "SII_6716_EW", "SII_6731_EW"]
 l = args.l
-l_test = 'test' # sv3 testing set is labeled as l=10 which corresponds to "test" in lines
-run = 0
-run_test = 1
-m = 5 
+l_test = args.l # sv3 testing set is labeled as l=10 which corresponds to "test" in lines
+run = 2
+run_test = 2
+sv_train = '1'
+sv_test = '3'
+m = 0 
 #loga = False
 
-data = 3 # 0 is raw_masked, 1 is raw_unmasked, 2 is fastspec, 3 is fastphot
+data = 0 # 0 is raw_masked, 1 is raw_unmasked, 2 is fastspec, 3 is fastphot
 data_file_names = ['raw_masked', 'raw_unmasked', 'fastspec', 'fastphot']
 data_flux_names = ['fluxes_raw_masked', 'fluxes_raw_unmasked', 'fluxes_fastspec', 'fluxes_fastphot']
 
@@ -82,20 +85,25 @@ for N in Ns:
     for i in range(decades):
         n = n_decades[i]
         if i == 2:
-            fluxes_bin[10**4*i:25*10**3,:] =  np.load(server_paths[server] + "fluxes_from_spectra/" + data_file_names[data] + "/" + data_flux_names[data]\
+            fluxes_bin[10**4*i:25*10**3,:] =  np.load(server_paths[server] + "fluxes_from_spectra/" + data_file_names[data] + "/sv" + sv_train + "_"\
+                                                      + data_flux_names[data]\
                                                 +str(i)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt.npz")["arr_0"]
+            
         else:
-            fluxes_bin[10**4*i:n*(i+1),:] = np.load(server_paths[server] + "fluxes_from_spectra/" + data_file_names[data] + "/" + data_flux_names[data]\
+            fluxes_bin[10**4*i:n*(i+1),:] = np.load(server_paths[server] + "fluxes_from_spectra/" + data_file_names[data] + "/sv" + sv_train + "_"\
+                                                    + data_flux_names[data]\
                                             +str(i)+ "_selection"+str(run)+"_"+str(lines[l])+"_bins"+str(N)+".txt.npz")["arr_0"]
-            fluxes_bin_test[10**4*i:n*(i+1),:] = np.load(server_paths[server] + "fluxes_from_spectra/" + data_file_names[data] + "/" + data_flux_names[data]\
+            
+            fluxes_bin_test[10**4*i:n*(i+1),:] = np.load(server_paths[server] + "fluxes_from_spectra/" + data_file_names[data] + "/sv" + sv_test + "_"\
+                                                         + data_flux_names[data]\
                                             +str(i)+ "_selection"+str(run_test)+"_"+str(l_test)+"_bins"+str(N)+".txt.npz")["arr_0"]
 
-    zs = np.load(server_paths[server] + "target_selection/zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
-    target_lines = np.load(server_paths[server] + "target_selection/line_ews_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
-    line_ivars = np.load(server_paths[server] + "target_selection/line_ivars_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
-    zs_test = np.load(server_paths[server] + "target_selection/zs_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"]
-    target_lines_test = np.load(server_paths[server] + "target_selection/line_ews_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"]
-    line_ivars_test = np.load(server_paths[server] + "target_selection/line_ivars_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"]
+    zs = np.load(server_paths[server] + "target_selection/sv" + sv_train + "_zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
+    target_lines = np.load(server_paths[server] + "target_selection/sv" + sv_train + "_line_ews_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
+    line_ivars = np.load(server_paths[server] + "target_selection/sv" + sv_train + "_line_ivars_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
+    zs_test = np.load(server_paths[server] + "target_selection/sv" + sv_test + "_zs_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"]
+    target_lines_test = np.load(server_paths[server] + "target_selection/sv" + sv_test + "_line_ews_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"]
+    line_ivars_test = np.load(server_paths[server] + "target_selection/sv" + sv_test + "_line_ivars_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"]
 
     x, EW, line_ivars = features_and_outcomes(fluxes_bin, target_lines, 23*10**3, line_ivars, loga = True)
     
@@ -151,11 +159,11 @@ for N in Ns:
     print('nmad= ' + str(nmad))
     print("\n")
 
-    np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_logEW_fit_" + data_file_names[data] + "_selection" + str(run) + \
+    np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_sv" + sv_test + "_logEW_fit_" + data_file_names[data] + "_selection" + str(run) + \
                                 "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", EW_fit)
-    np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_EW_obs_" + data_file_names[data] + "_selection" + str(run) + \
+    np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_sv" + sv_test + "_EW_obs_" + data_file_names[data] + "_selection" + str(run) + \
                                 "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", EW_test)
-    np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_line_ivars_" + data_file_names[data] + "_selection" + str(run) + \
+    np.savez_compressed(server_paths[server] + "ew_results/" + data_file_names[data] + "/m" + str(m) + "/test_sv" + sv_test + "_line_ivars_" + data_file_names[data] + "_selection" + str(run) + \
                                 "_line" + str(lines[l]) + "_bins" + str(N) + "_ML" + str(m) + ".txt", line_ivars_test)
         
     # if loga:

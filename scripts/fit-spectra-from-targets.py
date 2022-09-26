@@ -32,21 +32,22 @@ args=parser.parse_args()
 cosmo=FlatLambdaCDM(H0=70, Om0=0.3)
 
 lines=["OII_DOUBLET_EW", "HGAMMA_EW", "HBETA_EW", "OIII_4959_EW", "OIII_5007_EW", "NII_6548_EW", "HALPHA_EW", "NII_6584_EW", "SII_6716_EW", "SII_6731_EW", "test"]
-run = 0
+run = 2
 l = args.l
-fastspec = False
+sv = '1'
+fastspec = True
 fastphot = not(fastspec)
 
 server = 1 # 0 is perlmutter, 1 is cori
 server_paths = ['/pscratch/sd/a/ashodkh/', '/global/cscratch1/sd/ashodkh/']
 
-zs = np.load(server_paths[server] + "target_selection/zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
+zs = np.load(server_paths[server] + "target_selection/sv" + sv + "_zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
 if fastspec:
-    coeffs = np.load(server_paths[server] + "target_selection/fastspec_coeffs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
-    AV = np.load(server_paths[server] + "target_selection/fastspec_AV_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
+    coeffs = np.load(server_paths[server] + "target_selection/sv" + sv + "_fastspec_coeffs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
+    AV = np.load(server_paths[server] + "target_selection/sv" + sv + "_fastspec_AV_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
 elif fastphot:
-    coeffs = np.load(server_paths[server] + "target_selection/fastphot_coeffs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
-    AV = np.load(server_paths[server] + "target_selection/fastphot_AV_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
+    coeffs = np.load(server_paths[server] + "target_selection/sv" + sv + "_fastphot_coeffs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
+    AV = np.load(server_paths[server] + "target_selection/sv" + sv + "_fastphot_AV_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
         
 file_path = "/global/cfs/cdirs/desi/science/gqp/templates/SSP-CKC14z/v1.0/SSP_Padova_CKC14z_Kroupa_Z0.0190.fits"
 templates = fits.open(file_path)
@@ -94,6 +95,6 @@ for j in range(decades):
 
 
     if fastspec:
-        np.savez_compressed(server_paths[server] + "spectra_from_targets/fastspec/fastspec_spectra" +str(j)+ "_selection"+str(run)+"_"+str(lines[l])+".txt", spectra)
+        np.savez_compressed(server_paths[server] + "spectra_from_targets/fastspec/sv" + sv + "_fastspec_spectra" +str(j)+ "_selection"+str(run)+"_"+str(lines[l])+".txt", spectra)
     elif fastphot:
-        np.savez_compressed(server_paths[server] + "spectra_from_targets/fastphot/fastphot_spectra" +str(j)+ "_selection"+str(run)+"_"+str(lines[l])+".txt", spectra)
+        np.savez_compressed(server_paths[server] + "spectra_from_targets/fastphot/sv" + sv + "_fastphot_spectra" +str(j)+ "_selection"+str(run)+"_"+str(lines[l])+".txt", spectra)

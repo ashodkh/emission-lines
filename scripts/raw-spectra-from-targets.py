@@ -21,17 +21,18 @@ args=parser.parse_args()
 
 lines=["OII_DOUBLET_EW","HGAMMA_EW","HBETA_EW","OIII_4959_EW","OIII_5007_EW","NII_6548_EW","HALPHA_EW","NII_6584_EW","SII_6716_EW","SII_6731_EW", "test"]
 
-run = 0
+run = 2
 l = args.l
+sv = '1'
 
 server = 1 # 0 is perlmutter, 1 is cori
 server_paths = ['/pscratch/sd/a/ashodkh/', '/global/cscratch1/sd/ashodkh/']
 
-target_ids = np.load(server_paths[server] + "target_selection/target_ids_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
-fiber_ids = np.load(server_paths[server] + "target_selection/fiber_ids_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
-petal_locs = np.load(server_paths[server] + "target_selection/petal_locs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
-tile_ids = np.load(server_paths[server] + "target_selection/tile_ids_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']  
-zs = np.load(server_paths[server] + "target_selection/zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
+target_ids = np.load(server_paths[server] + "target_selection/sv" + sv + "_target_ids_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
+fiber_ids = np.load(server_paths[server] + "target_selection/sv" + sv + "_fiber_ids_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
+petal_locs = np.load(server_paths[server] + "target_selection/sv" + sv + "_petal_locs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
+tile_ids = np.load(server_paths[server] + "target_selection/sv" + sv + "_tile_ids_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']  
+zs = np.load(server_paths[server] + "target_selection/sv" + sv + "_zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")['arr_0']
 
 ## getting spectra for n points by inverse variance weighting fluxes.
 ## I am limiting spectra to 10k at a time for memory issues. decades = number of 10k spectra. so decades = 3 is 30,000, stored in separate 10k files
@@ -97,5 +98,5 @@ for i in range(decades):
 
     #wavelength = np.arange(3600, 9824+.8, .8)
     
-    np.savez_compressed(server_paths[server] + "spectra_from_targets/raw/raw_spectra" +str(i)+ "_selection"+str(run)+"_"+str(lines[l])+".txt", spectra)
+    np.savez_compressed(server_paths[server] + "spectra_from_targets/raw/sv" + sv + "_raw_spectra" +str(i)+ "_selection"+str(run)+"_"+str(lines[l])+".txt", spectra)
     #np.savez_compressed("/pscratch/sd/a/ashodkh/spectra_from_targets/raw/raw_data_wavelengths.txt", wavelength)
