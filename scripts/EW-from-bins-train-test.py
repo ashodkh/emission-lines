@@ -31,14 +31,12 @@ def features_and_outcomes(x_in, y_in, n_out, ivar, loga):
         select_fluxes = select_fluxes*(x_in[:,i]>0)
     
     x_in = x_in[select_fluxes,:]
-    y_in = y_in[select_fluxes]
-    ivar = ivar[select_fluxes]
     
     for j in range(x_in.shape[1]):
-        magnitudes[:,j] = -2.5*np.log10(x_in[:,j])
+        magnitudes[:,j] = -2.5*np.log10(x_in[:n_out,j])
         
     for j in range(len(lines)):
-        EWs[:,j] = y_in[j][:]
+        EWs[:,j] = y_in[j][select_fluxes][:n_out]
     
     ones = np.ones([n_out,1])
     scalar = StandardScaler()
@@ -54,7 +52,8 @@ def features_and_outcomes(x_in, y_in, n_out, ivar, loga):
         y_out = np.log10(EWs[:,l])
     else:
         y_out = EWs[:,l]
-        
+    ivar = ivar[l][select_fluxes][:n_out]    
+    
     return x_out, y_out, ivar
 
 
@@ -67,10 +66,10 @@ run = 2
 run_test = 2
 sv_train = '1'
 sv_test = '3'
-m = 0 
+m = 5 
 #loga = False
 
-data = 0 # 0 is raw_masked, 1 is raw_unmasked, 2 is fastspec, 3 is fastphot
+data = 3 # 0 is raw_masked, 1 is raw_unmasked, 2 is fastspec, 3 is fastphot
 data_file_names = ['raw_masked', 'raw_unmasked', 'fastspec', 'fastphot']
 data_flux_names = ['fluxes_raw_masked', 'fluxes_raw_unmasked', 'fluxes_fastspec', 'fluxes_fastphot']
 
@@ -96,14 +95,14 @@ for N in Ns:
             
             fluxes_bin_test[10**4*i:n*(i+1),:] = np.load(server_paths[server] + "fluxes_from_spectra/" + data_file_names[data] + "/sv" + sv_test + "_"\
                                                          + data_flux_names[data]\
-                                            +str(i)+ "_selection"+str(run_test)+"_"+str(l_test)+"_bins"+str(N)+".txt.npz")["arr_0"]
+                                            +str(i)+ "_selection"+str(run_test)+"_"+str(lines[l_test])+"_bins"+str(N)+".txt.npz")["arr_0"]
 
     zs = np.load(server_paths[server] + "target_selection/sv" + sv_train + "_zs_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
     target_lines = np.load(server_paths[server] + "target_selection/sv" + sv_train + "_line_ews_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
     line_ivars = np.load(server_paths[server] + "target_selection/sv" + sv_train + "_line_ivars_selection" + str(run) + "_" + str(lines[l]) + ".txt.npz")["arr_0"]
-    zs_test = np.load(server_paths[server] + "target_selection/sv" + sv_test + "_zs_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"]
-    target_lines_test = np.load(server_paths[server] + "target_selection/sv" + sv_test + "_line_ews_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"]
-    line_ivars_test = np.load(server_paths[server] + "target_selection/sv" + sv_test + "_line_ivars_selection" + str(run_test) + "_" + str(l_test) + ".txt.npz")["arr_0"]
+    zs_test = np.load(server_paths[server] + "target_selection/sv" + sv_test + "_zs_selection" + str(run_test) + "_" + str(lines[l_test]) + ".txt.npz")["arr_0"]
+    target_lines_test = np.load(server_paths[server] + "target_selection/sv" + sv_test + "_line_ews_selection" + str(run_test) + "_" + str(lines[l_test]) + ".txt.npz")["arr_0"]
+    line_ivars_test = np.load(server_paths[server] + "target_selection/sv" + sv_test + "_line_ivars_selection" + str(run_test) + "_" + str(lines[l_test]) + ".txt.npz")["arr_0"]
 
     x, EW, line_ivars = features_and_outcomes(fluxes_bin, target_lines, 23*10**3, line_ivars, loga = True)
     

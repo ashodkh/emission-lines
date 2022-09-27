@@ -25,7 +25,7 @@ nw = 7781       # length of wavelength vector
 run = 2         # run is to keep track of which selection
 l = args.l
 sv = '1'
-fastspec = True
+fastspec = False
 fastphot = not(fastspec)
 
 lines = ["OII_DOUBLET_EW", "HGAMMA_EW", "HBETA_EW", "OIII_4959_EW", "OIII_5007_EW", "NII_6548_EW", "HALPHA_EW", "NII_6584_EW", "SII_6716_EW", "SII_6731_EW", "test"]
